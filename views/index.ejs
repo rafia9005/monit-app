@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js Monitoring App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('systemData', (data) => {
+            document.getElementById('cpuUsage').innerText = data.cpuUsage + ' %';
+            document.getElementById('freeMemory').innerText = data.freeMemory + ' MB / ' + data.totalMemory + ' MB';
+            document.getElementById('uptime').innerText = data.uptime + ' minutes';
+            document.getElementById('loadavg').innerText = data.loadavg;
+            document.getElementById('cpuModel').innerText = data.cpuData.manufacturer + ' ' + data.cpuData.brand;
+            document.getElementById('cpuCores').innerText = data.cpuData.cores;
+            document.getElementById('osInfo').innerText = data.osData.distro + ' ' + data.osData.release;
+            document.getElementById('osArch').innerText = data.osData.arch;
+            document.getElementById('osKernel').innerText = data.osData.kernel;
+            document.getElementById('diskInfo').innerText = data.diskData.map(disk => disk.name + ' ' + disk.size / 1024 / 1024 / 1024 + ' GB').join(', ');
+            document.getElementById('networkInfo').innerText = data.networkData.map(net => net.iface + ': ' + net.rx_bytes / 1024 / 1024 + ' MB RX, ' + net.tx_bytes / 1024 / 1024 + ' MB TX').join(', ');
+            let processesTable = '';
+            data.processData.forEach(proc => {
+                processesTable += `<tr>
+                                    <td>${proc.pid}</td>
+                                    <td>${proc.name}</td>
+                                    <td>${proc.cpuUsage} %</td>
+                                    <td>${proc.memoryUsage} MB</td>
+                                </tr>`;
+            });
+            document.getElementById('processesTable').innerHTML = processesTable;
+        });
+    </script>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <div class="container mx-auto p-8">
+        <h1 class="text-4xl font-bold text-center text-teal-400 mb-8">Node.js Monitoring Dashboard</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-300">CPU Usage</h3>
+                <p id="cpuUsage" class="text-3xl font-bold text-teal-500">Loading...</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-300">Memory Usage</h3>
+                <p id="freeMemory" class="text-3xl font-bold text-green-400">Loading...</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-300">Uptime</h3>
+                <p id="uptime" class="text-3xl font-bold text-yellow-400">Loading...</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-300">Load Average</h3>
+                <p id="loadavg" class="text-3xl font-bold text-purple-500">Loading...</p>
+            </div>
+        </div>
+        <div class="mt-12">
+            <h2 class="text-3xl font-semibold text-gray-300 mb-4">System Information</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <p id="cpuModel" class="text-xl">Loading...</p>
+                    <p id="cpuCores" class="text-xl">Loading...</p>
+                </div>
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <p id="osInfo" class="text-xl">Loading...</p>
+                    <p id="osArch" class="text-xl">Loading...</p>
+                    <p id="osKernel" class="text-xl">Loading...</p>
+                </div>
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <p id="diskInfo" class="text-xl">Loading...</p>
+                </div>
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <p id="networkInfo" class="text-xl">Loading...</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-12">
+            <h2 class="text-3xl font-semibold text-gray-300 mb-4">System Processes</h2>
+            <div class="overflow-x-auto bg-gray-800 rounded-lg shadow-lg p-6">
+                <table class="table-auto w-full text-left text-gray-100">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2">PID</th>
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">CPU Usage</th>
+                            <th class="px-4 py-2">Memory Usage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="processesTable">
+                        <tr>
+                            <td colspan="4" class="text-center text-gray-400">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
